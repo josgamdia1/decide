@@ -4,11 +4,13 @@ services:
   db:
     restart: always
     container_name: decide_db
-    image: postgres:alpine
+    image: postgres:10.15-alpine
     volumes:
       - db:/var/lib/postgresql/data
     networks:
       - decide
+    environment:
+      - POSTGRES_PASSWORD=postgres
   web:
     restart: always
     container_name: decide_web
@@ -16,7 +18,7 @@ services:
     build: .
     command: ash -c "python manage.py migrate && gunicorn -w 5 decide.wsgi --timeout=500 -b 0.0.0.0:5000"
     expose:
-      - "5000"
+      - '5000'
     volumes:
       - static:/app/static
     depends_on:
@@ -28,12 +30,12 @@ services:
     container_name: decide_nginx
     image: decide_nginx:latest
     build:
-        context: .
-        dockerfile: Dockerfile-nginx
+      context: .
+      dockerfile: Dockerfile-nginx
     volumes:
       - static:/app/static
     ports:
-      - "8000:80"
+      - '8000:80'
     depends_on:
       - web
     networks:
@@ -49,6 +51,6 @@ networks:
   decide:
     driver: bridge
     ipam:
-     driver: default
-     config:
-       - subnet: 10.5.0.0/16
+      driver: default
+      config:
+        - subnet: 10.5.0.0/16
